@@ -40,6 +40,14 @@ export async function POST(request: Request) {
   }
 
   const { briefConfigId, answers } = parsed.data;
+  const briefExists = await prisma.briefConfig.findUnique({
+    where: { id: briefConfigId },
+    select: { id: true },
+  });
+  if (!briefExists) {
+    return NextResponse.json({ error: "Brief not found" }, { status: 400 });
+  }
+
   const questionIds = [...new Set(answers.map((answer) => answer.questionId))];
   if (questionIds.length !== answers.length) {
     return NextResponse.json({ error: "Duplicate question answers are not allowed" }, { status: 400 });
@@ -63,56 +71,61 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Submission contains unknown questions" }, { status: 400 });
   }
 
-  const normalizedAnswers = answers.map((answer) => {
-    const question = questionById.get(answer.questionId);
-    if (!question) {
-      throw new Error("QUESTION_NOT_FOUND");
-    }
+  let normalizedAnswers: Array<{ questionId: string; value: string }>;
+  try {
+    normalizedAnswers = answers.map((answer) => {
+      const question = questionById.get(answer.questionId);
+      if (!question) {
+        throw new Error("QUESTION_NOT_FOUND");
+      }
 
-    const value = answer.value;
-    const options = parseOptions(question.optionsJson);
+      const value = answer.value;
+      const options = parseOptions(question.optionsJson);
 
-    switch (question.type) {
-      case "text":
-      case "textarea":
-      case "email": {
-        if (typeof value !== "string") throw new Error("INVALID_VALUE_TYPE");
-        if (question.required && isEmptyString(value)) throw new Error("REQUIRED_VALUE_MISSING");
-        if (question.type === "email" && !isEmptyString(value)) {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(value.trim())) throw new Error("INVALID_EMAIL");
+      switch (question.type) {
+        case "text":
+        case "textarea":
+        case "email": {
+          if (typeof value !== "string") throw new Error("INVALID_VALUE_TYPE");
+          if (question.required && isEmptyString(value)) throw new Error("REQUIRED_VALUE_MISSING");
+          if (question.type === "email" && !isEmptyString(value)) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value.trim())) throw new Error("INVALID_EMAIL");
+          }
+          return { questionId: answer.questionId, value: value.trim() };
         }
-        return { questionId: answer.questionId, value: value.trim() };
-      }
-      case "number": {
-        const raw = typeof value === "number" ? String(value) : typeof value === "string" ? value : null;
-        if (raw === null) throw new Error("INVALID_VALUE_TYPE");
-        if (question.required && isEmptyString(raw)) throw new Error("REQUIRED_VALUE_MISSING");
-        if (!isEmptyString(raw) && Number.isNaN(Number(raw))) throw new Error("INVALID_NUMBER");
-        return { questionId: answer.questionId, value: raw.trim() };
-      }
-      case "checkbox": {
-        if (typeof value !== "boolean") throw new Error("INVALID_VALUE_TYPE");
-        return { questionId: answer.questionId, value: value ? "true" : "false" };
-      }
-      case "singleSelect": {
-        if (typeof value !== "string") throw new Error("INVALID_VALUE_TYPE");
-        if (question.required && isEmptyString(value)) throw new Error("REQUIRED_VALUE_MISSING");
-        if (!isEmptyString(value) && !options.includes(value)) throw new Error("INVALID_OPTION");
-        return { questionId: answer.questionId, value };
-      }
-      case "multiSelect": {
-        if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
-          throw new Error("INVALID_VALUE_TYPE");
+        case "number": {
+          const raw = typeof value === "number" ? String(value) : typeof value === "string" ? value : null;
+          if (raw === null) throw new Error("INVALID_VALUE_TYPE");
+          if (question.required && isEmptyString(raw)) throw new Error("REQUIRED_VALUE_MISSING");
+          if (!isEmptyString(raw) && Number.isNaN(Number(raw))) throw new Error("INVALID_NUMBER");
+          return { questionId: answer.questionId, value: raw.trim() };
         }
-        if (question.required && value.length === 0) throw new Error("REQUIRED_VALUE_MISSING");
-        if (value.some((selected) => !options.includes(selected))) throw new Error("INVALID_OPTION");
-        return { questionId: answer.questionId, value: JSON.stringify(value) };
+        case "checkbox": {
+          if (typeof value !== "boolean") throw new Error("INVALID_VALUE_TYPE");
+          return { questionId: answer.questionId, value: value ? "true" : "false" };
+        }
+        case "singleSelect": {
+          if (typeof value !== "string") throw new Error("INVALID_VALUE_TYPE");
+          if (question.required && isEmptyString(value)) throw new Error("REQUIRED_VALUE_MISSING");
+          if (!isEmptyString(value) && !options.includes(value)) throw new Error("INVALID_OPTION");
+          return { questionId: answer.questionId, value };
+        }
+        case "multiSelect": {
+          if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
+            throw new Error("INVALID_VALUE_TYPE");
+          }
+          if (question.required && value.length === 0) throw new Error("REQUIRED_VALUE_MISSING");
+          if (value.some((selected) => !options.includes(selected))) throw new Error("INVALID_OPTION");
+          return { questionId: answer.questionId, value: JSON.stringify(value) };
+        }
+        default:
+          throw new Error("INVALID_QUESTION_TYPE");
       }
-      default:
-        throw new Error("INVALID_QUESTION_TYPE");
-    }
-  });
+    });
+  } catch {
+    return NextResponse.json({ error: "Invalid submission answers" }, { status: 400 });
+  }
 
   const requiredQuestions = (await prisma.briefQuestion.findMany({
     where: { briefConfigId, required: true },

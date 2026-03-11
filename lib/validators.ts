@@ -34,10 +34,26 @@ const questionBaseSchema = z.object({
   optionsJson: z.array(z.string().trim().min(1)).max(100).optional().nullable(),
 });
 
-export const questionCreateSchema = questionBaseSchema.superRefine((value, ctx) => {
+function validateQuestionOptions(
+  value: { type?: z.infer<typeof questionTypeSchema>; optionsJson?: string[] | null },
+  ctx: z.RefinementCtx,
+  requireOptionsForSelect: boolean,
+) {
   const needsOptions = value.type === "singleSelect" || value.type === "multiSelect";
 
-  if (needsOptions && (!value.optionsJson || value.optionsJson.length === 0)) {
+  if (needsOptions && requireOptionsForSelect && (!value.optionsJson || value.optionsJson.length === 0)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["optionsJson"],
+      message: "singleSelect and multiSelect questions must include at least one option",
+    });
+  }
+  if (
+    needsOptions &&
+    value.optionsJson !== undefined &&
+    value.optionsJson !== null &&
+    value.optionsJson.length === 0
+  ) {
     ctx.addIssue({
       code: "custom",
       path: ["optionsJson"],
@@ -51,11 +67,15 @@ export const questionCreateSchema = questionBaseSchema.superRefine((value, ctx) 
       message: "optionsJson is only allowed for singleSelect and multiSelect",
     });
   }
-});
+}
 
-export const questionUpdateSchema = questionCreateSchema.partial().extend({
-  sortOrder: z.number().int().min(0).optional(),
-});
+export const questionCreateSchema = questionBaseSchema.superRefine((value, ctx) =>
+  validateQuestionOptions(value, ctx, true),
+);
+
+export const questionUpdateSchema = questionBaseSchema.partial().superRefine((value, ctx) =>
+  validateQuestionOptions(value, ctx, false),
+);
 
 export const submissionInputSchema = z.object({
   briefConfigId: z.string().cuid(),
