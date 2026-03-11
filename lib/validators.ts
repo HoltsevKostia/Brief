@@ -11,6 +11,7 @@ export const questionTypeSchema = z.enum([
   "email",
   "number",
   "singleSelect",
+  "multiSelect",
   "checkbox",
 ]);
 
@@ -34,18 +35,20 @@ const questionBaseSchema = z.object({
 });
 
 export const questionCreateSchema = questionBaseSchema.superRefine((value, ctx) => {
-  if (value.type === "singleSelect" && (!value.optionsJson || value.optionsJson.length === 0)) {
+  const needsOptions = value.type === "singleSelect" || value.type === "multiSelect";
+
+  if (needsOptions && (!value.optionsJson || value.optionsJson.length === 0)) {
     ctx.addIssue({
       code: "custom",
       path: ["optionsJson"],
-      message: "singleSelect questions must include at least one option",
+      message: "singleSelect and multiSelect questions must include at least one option",
     });
   }
-  if (value.type !== "singleSelect" && value.optionsJson && value.optionsJson.length > 0) {
+  if (!needsOptions && value.optionsJson && value.optionsJson.length > 0) {
     ctx.addIssue({
       code: "custom",
       path: ["optionsJson"],
-      message: "optionsJson is only allowed for singleSelect",
+      message: "optionsJson is only allowed for singleSelect and multiSelect",
     });
   }
 });
@@ -59,7 +62,20 @@ export const submissionInputSchema = z.object({
   answers: z.array(
     z.object({
       questionId: z.string().cuid(),
-      value: z.union([z.string(), z.boolean(), z.number()]),
+      value: z.union([z.string(), z.boolean(), z.number(), z.array(z.string())]),
     }),
   ),
+}).superRefine((data, ctx) => {
+  const seen = new Set<string>();
+  data.answers.forEach((answer, index) => {
+    if (seen.has(answer.questionId)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["answers", index, "questionId"],
+        message: "Duplicate questionId is not allowed",
+      });
+      return;
+    }
+    seen.add(answer.questionId);
+  });
 });

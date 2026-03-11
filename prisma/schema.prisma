@@ -13,6 +13,7 @@ enum QuestionType {
   email
   number
   singleSelect
+  multiSelect
   checkbox
 }
 
@@ -49,7 +50,6 @@ model BriefQuestion {
   updatedAt     DateTime     @updatedAt
 
   @@index([briefConfigId, sortOrder])
-  @@index([briefConfigId])
 }
 
 model Submission {
