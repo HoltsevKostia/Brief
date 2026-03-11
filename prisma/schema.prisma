@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum QuestionType {
+  text
+  textarea
+  email
+  number
+  singleSelect
+  checkbox
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model BriefConfig {
+  id          String          @id @default(cuid())
+  title       String
+  description String
+  questions   BriefQuestion[]
+  submissions Submission[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model BriefQuestion {
+  id            String       @id @default(cuid())
+  briefConfigId String
+  briefConfig   BriefConfig  @relation(fields: [briefConfigId], references: [id], onDelete: Cascade)
+  label         String
+  type          QuestionType
+  required      Boolean      @default(false)
+  sortOrder     Int
+  placeholder   String?
+  optionsJson   Json?
+  answers       Answer[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([briefConfigId, sortOrder])
+  @@index([briefConfigId])
+}
+
+model Submission {
+  id            String      @id @default(cuid())
+  briefConfigId String
+  briefConfig   BriefConfig @relation(fields: [briefConfigId], references: [id], onDelete: Cascade)
+  answers       Answer[]
+  createdAt     DateTime    @default(now())
+
+  @@index([briefConfigId, createdAt])
+  @@index([createdAt])
+}
+
+model Answer {
+  id           String        @id @default(cuid())
+  submissionId String
+  submission   Submission    @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  questionId   String
+  question     BriefQuestion @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  value        String
+  createdAt    DateTime      @default(now())
+
+  @@index([submissionId])
+  @@index([questionId])
+}
