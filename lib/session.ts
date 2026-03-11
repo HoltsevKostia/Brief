@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 const SESSION_COOKIE_NAME = "brief_admin_session";
 export const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
-type SessionPayload = {
+export type SessionPayload = {
   adminId: string;
   exp: number;
 };

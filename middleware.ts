@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { sessionCookieName, verifySession } from "@/lib/session";
+
+const SESSION_COOKIE_NAME = "brief_admin_session";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -12,9 +13,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get(sessionCookieName)?.value;
-  const session = verifySession(token);
-  if (session) {
+  const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+  if (token) {
     return NextResponse.next();
   }
 

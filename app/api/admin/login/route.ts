@@ -1,5 +1,6 @@
 import { compare } from "bcryptjs";
 import { NextResponse } from "next/server";
+import { getAdminSessionFromRequest } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   createSessionToken,
@@ -9,6 +10,11 @@ import {
 import { loginSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
+  const existingSession = getAdminSessionFromRequest(request);
+  if (existingSession) {
+    return NextResponse.json({ success: true });
+  }
+
   const body = await request.json().catch(() => null);
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {
