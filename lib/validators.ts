@@ -77,6 +77,11 @@ export const questionUpdateSchema = questionBaseSchema.partial().superRefine((va
   validateQuestionOptions(value, ctx, false),
 );
 
+export const questionReorderSchema = z.object({
+  questionId: z.cuid(),
+  direction: z.enum(["up", "down"]),
+});
+
 export const submissionInputSchema = z.object({
   briefConfigId: z.string().cuid(),
   answers: z.array(
