@@ -18,14 +18,14 @@ export async function POST(request: Request) {
   const { questionId, direction } = parsed.data;
   const current = await prisma.briefQuestion.findUnique({
     where: { id: questionId },
-    select: { id: true, briefConfigId: true },
+    select: { id: true, briefSectionId: true },
   });
   if (!current) {
     return NextResponse.json({ error: "Питання не знайдено" }, { status: 404 });
   }
 
   const ordered = await prisma.briefQuestion.findMany({
-    where: { briefConfigId: current.briefConfigId },
+    where: { briefSectionId: current.briefSectionId },
     orderBy: { sortOrder: "asc" },
     select: { id: true, sortOrder: true },
   });

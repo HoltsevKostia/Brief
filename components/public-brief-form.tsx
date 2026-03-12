@@ -20,9 +20,16 @@ type BriefQuestion = {
   optionsJson: unknown;
 };
 
+type BriefSection = {
+  id: string;
+  title: string;
+  description: string | null;
+  questions: BriefQuestion[];
+};
+
 type BriefFormProps = {
   briefConfigId: string;
-  questions: BriefQuestion[];
+  sections: BriefSection[];
 };
 
 function parseOptions(optionsJson: unknown): string[] {
@@ -30,14 +37,19 @@ function parseOptions(optionsJson: unknown): string[] {
   return optionsJson.filter((item): item is string => typeof item === "string");
 }
 
-export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
+export function PublicBriefForm({ briefConfigId, sections }: BriefFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const allQuestions = useMemo(
+    () => sections.flatMap((section) => section.questions),
+    [sections],
+  );
+
   const optionsById = useMemo(
     () =>
-      new Map(questions.map((question) => [question.id, parseOptions(question.optionsJson)])),
-    [questions],
+      new Map(allQuestions.map((question) => [question.id, parseOptions(question.optionsJson)])),
+    [allQuestions],
   );
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -46,7 +58,7 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const answers = questions.map((question) => {
+    const answers = allQuestions.map((question) => {
       switch (question.type) {
         case "checkbox":
           return {
@@ -87,107 +99,121 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-7">
-      {questions.map((question) => {
-        const options = optionsById.get(question.id) ?? [];
+      {sections.map((section) => (
+        <section
+          key={section.id}
+          className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+        >
+          <header>
+            <h2 className="text-lg font-semibold text-slate-900">{section.title}</h2>
+            {section.description ? (
+              <p className="mt-1 text-sm text-slate-600">{section.description}</p>
+            ) : null}
+          </header>
 
-        return (
-          <div key={question.id} className="space-y-2.5">
-            <label htmlFor={question.id} className="block text-sm font-medium text-slate-900">
-              {question.label} {question.required ? <span className="text-red-600">*</span> : null}
-            </label>
+          {section.questions.map((question) => {
+            const options = optionsById.get(question.id) ?? [];
 
-            {question.type === "text" && (
-              <input
-                id={question.id}
-                name={question.id}
-                type="text"
-                required={question.required}
-                placeholder={question.placeholder ?? ""}
-                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              />
-            )}
+            return (
+              <div key={question.id} className="space-y-2.5">
+                <label htmlFor={question.id} className="block text-sm font-medium text-slate-900">
+                  {question.label} {question.required ? <span className="text-red-600">*</span> : null}
+                </label>
 
-            {question.type === "textarea" && (
-              <textarea
-                id={question.id}
-                name={question.id}
-                required={question.required}
-                placeholder={question.placeholder ?? ""}
-                className="min-h-28 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              />
-            )}
+                {question.type === "text" && (
+                  <input
+                    id={question.id}
+                    name={question.id}
+                    type="text"
+                    required={question.required}
+                    placeholder={question.placeholder ?? ""}
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                )}
 
-            {question.type === "email" && (
-              <input
-                id={question.id}
-                name={question.id}
-                type="email"
-                required={question.required}
-                placeholder={question.placeholder ?? ""}
-                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              />
-            )}
+                {question.type === "textarea" && (
+                  <textarea
+                    id={question.id}
+                    name={question.id}
+                    required={question.required}
+                    placeholder={question.placeholder ?? ""}
+                    className="min-h-28 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                )}
 
-            {question.type === "number" && (
-              <input
-                id={question.id}
-                name={question.id}
-                type="number"
-                required={question.required}
-                placeholder={question.placeholder ?? ""}
-                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              />
-            )}
+                {question.type === "email" && (
+                  <input
+                    id={question.id}
+                    name={question.id}
+                    type="email"
+                    required={question.required}
+                    placeholder={question.placeholder ?? ""}
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                )}
 
-            {question.type === "singleSelect" && (
-              <select
-                id={question.id}
-                name={question.id}
-                required={question.required}
-                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                defaultValue=""
-              >
-                <option value="" disabled>
-                  Оберіть варіант
-                </option>
-                {options.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            )}
+                {question.type === "number" && (
+                  <input
+                    id={question.id}
+                    name={question.id}
+                    type="number"
+                    required={question.required}
+                    placeholder={question.placeholder ?? ""}
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                )}
 
-            {question.type === "multiSelect" && (
-              <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                {options.map((option) => (
-                  <label key={option} className="flex items-center gap-2.5 text-sm text-slate-700">
+                {question.type === "singleSelect" && (
+                  <select
+                    id={question.id}
+                    name={question.id}
+                    required={question.required}
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Оберіть варіант
+                    </option>
+                    {options.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {question.type === "multiSelect" && (
+                  <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    {options.map((option) => (
+                      <label key={option} className="flex items-center gap-2.5 text-sm text-slate-700">
+                        <input
+                          type="checkbox"
+                          name={question.id}
+                          value={option}
+                          className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <span>{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {question.type === "checkbox" && (
+                  <label className="flex items-center gap-2.5 text-sm text-slate-700">
                     <input
-                      type="checkbox"
+                      id={question.id}
                       name={question.id}
-                      value={option}
+                      type="checkbox"
                       className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
-                    <span>{option}</span>
+                    <span>Так</span>
                   </label>
-                ))}
+                )}
               </div>
-            )}
-
-            {question.type === "checkbox" && (
-              <label className="flex items-center gap-2.5 text-sm text-slate-700">
-                <input
-                  id={question.id}
-                  name={question.id}
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span>Так</span>
-              </label>
-            )}
-          </div>
-        );
-      })}
+            );
+          })}
+        </section>
+      ))}
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 

@@ -29,27 +29,45 @@ model BriefConfig {
   id          String          @id @default(cuid())
   title       String
   description String
+  sections    BriefSection[]
   questions   BriefQuestion[]
   submissions Submission[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 }
 
-model BriefQuestion {
-  id            String       @id @default(cuid())
+model BriefSection {
+  id            String          @id @default(cuid())
   briefConfigId String
-  briefConfig   BriefConfig  @relation(fields: [briefConfigId], references: [id], onDelete: Cascade)
-  label         String
-  type          QuestionType
-  required      Boolean      @default(false)
+  briefConfig   BriefConfig     @relation(fields: [briefConfigId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
   sortOrder     Int
-  placeholder   String?
-  optionsJson   Json?
-  answers       Answer[]
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  questions     BriefQuestion[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   @@index([briefConfigId, sortOrder])
+}
+
+model BriefQuestion {
+  id             String       @id @default(cuid())
+  briefConfigId  String
+  briefConfig    BriefConfig  @relation(fields: [briefConfigId], references: [id], onDelete: Cascade)
+  briefSectionId String
+  briefSection   BriefSection @relation(fields: [briefSectionId], references: [id], onDelete: Cascade)
+  label          String
+  type           QuestionType
+  required       Boolean      @default(false)
+  sortOrder      Int
+  placeholder    String?
+  optionsJson    Json?
+  answers        Answer[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([briefConfigId])
+  @@index([briefSectionId, sortOrder])
 }
 
 model Submission {

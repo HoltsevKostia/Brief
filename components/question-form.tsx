@@ -13,6 +13,7 @@ export type AdminQuestionType =
 
 export type AdminQuestion = {
   id: string;
+  briefSectionId: string;
   label: string;
   type: AdminQuestionType;
   required: boolean;
@@ -21,12 +22,19 @@ export type AdminQuestion = {
   optionsJson: unknown;
 };
 
+export type AdminSectionOption = {
+  id: string;
+  title: string;
+};
+
 type QuestionFormProps = {
   mode: "create" | "edit";
   initial?: AdminQuestion;
+  sections: AdminSectionOption[];
   nextSortOrder?: number;
   onCancel?: () => void;
   onSubmit: (payload: {
+    briefSectionId: string;
     label: string;
     type: AdminQuestionType;
     required: boolean;
@@ -72,10 +80,14 @@ function optionsToInput(optionsJson: unknown): string {
 export function QuestionForm({
   mode,
   initial,
+  sections,
   nextSortOrder = 1,
   onCancel,
   onSubmit,
 }: QuestionFormProps) {
+  const defaultSectionId = sections[0]?.id ?? "";
+
+  const [briefSectionId, setBriefSectionId] = useState(initial?.briefSectionId ?? defaultSectionId);
   const [label, setLabel] = useState(initial?.label ?? "");
   const [type, setType] = useState<AdminQuestionType>(initial?.type ?? "text");
   const [required, setRequired] = useState(initial?.required ?? false);
@@ -87,6 +99,7 @@ export function QuestionForm({
 
   useEffect(() => {
     if (mode === "create") {
+      setBriefSectionId(defaultSectionId);
       setLabel("");
       setType("text");
       setRequired(false);
@@ -98,6 +111,7 @@ export function QuestionForm({
     }
 
     if (initial) {
+      setBriefSectionId(initial.briefSectionId);
       setLabel(initial.label);
       setType(initial.type);
       setRequired(initial.required);
@@ -106,7 +120,7 @@ export function QuestionForm({
       setOptionsInput(optionsToInput(initial.optionsJson));
       setError(null);
     }
-  }, [initial, mode, nextSortOrder]);
+  }, [defaultSectionId, initial, mode, nextSortOrder]);
 
   const usesPlaceholder = useMemo(
     () => type === "text" || type === "textarea" || type === "email" || type === "number",
@@ -126,6 +140,7 @@ export function QuestionForm({
 
     try {
       await onSubmit({
+        briefSectionId,
         label: label.trim(),
         type,
         required,
@@ -135,6 +150,7 @@ export function QuestionForm({
       });
 
       if (mode === "create") {
+        setBriefSectionId(defaultSectionId);
         setLabel("");
         setType("text");
         setRequired(false);
@@ -154,6 +170,22 @@ export function QuestionForm({
       <h3 className="text-sm font-semibold text-slate-900">
         {mode === "create" ? "Додати питання" : "Редагувати питання"}
       </h3>
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-slate-900">Секція</label>
+        <select
+          value={briefSectionId}
+          onChange={(event) => setBriefSectionId(event.target.value)}
+          className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          required
+        >
+          {sections.map((section) => (
+            <option key={section.id} value={section.id}>
+              {section.title}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-slate-900">Назва питання</label>
@@ -182,7 +214,7 @@ export function QuestionForm({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-slate-900">Порядок</label>
+          <label className="text-sm font-medium text-slate-900">Порядок в секції</label>
           <input
             type="number"
             value={sortOrder}
@@ -222,7 +254,7 @@ export function QuestionForm({
           onChange={(event) => setOptionsInput(event.target.value)}
           className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           disabled={!usesOptions}
-          placeholder={usesOptions ? "Instagram, Telegram, Friend" : "Тільки для select-типів"}
+          placeholder={usesOptions ? "Варіант 1, Варіант 2" : "Тільки для select-типів"}
         />
       </div>
 
