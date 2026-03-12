@@ -14,6 +14,9 @@ export default async function AdminProtectedLayout({
           <Link href="/admin/brief" className="text-sm font-medium">
             Brief
           </Link>
+          <Link href="/admin/submissions" className="text-sm font-medium">
+            Submissions
+          </Link>
         </nav>
         <AdminLogoutButton />
       </header>
