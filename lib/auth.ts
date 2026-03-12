@@ -32,7 +32,7 @@ export function getAdminSessionFromRequest(
 export function requireAdminApi(request: Request): SessionPayload | NextResponse {
   const session = getAdminSessionFromRequest(request);
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Неавторизовано" }, { status: 401 });
   }
   return session;
 }

@@ -9,31 +9,33 @@ export default async function AdminSubmissionsPage() {
 
   return (
     <main className="space-y-4">
-      <h1 className="text-2xl font-semibold">Submissions</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Заявки</h1>
 
       {submissions.length === 0 ? (
-        <p className="text-sm text-gray-600">No submissions yet.</p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-sm text-slate-600">Поки що немає заявок.</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto rounded border">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b bg-gray-50 text-left">
-                <th className="px-3 py-2 font-medium">Submission ID</th>
-                <th className="px-3 py-2 font-medium">Created At</th>
-                <th className="px-3 py-2 font-medium">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50 text-left text-slate-700">
+                <th className="px-4 py-3 font-medium">ID заявки</th>
+                <th className="px-4 py-3 font-medium">Створено</th>
+                <th className="px-4 py-3 font-medium">Дії</th>
               </tr>
             </thead>
             <tbody>
               {submissions.map((submission) => (
-                <tr key={submission.id} className="border-b last:border-b-0">
-                  <td className="px-3 py-2 font-mono text-xs">{submission.id}</td>
-                  <td className="px-3 py-2">{submission.createdAt.toLocaleString()}</td>
-                  <td className="px-3 py-2">
+                <tr key={submission.id} className="border-b border-slate-100 last:border-b-0">
+                  <td className="px-4 py-3 font-mono text-xs text-slate-700">{submission.id}</td>
+                  <td className="px-4 py-3 text-slate-700">{submission.createdAt.toLocaleString()}</td>
+                  <td className="px-4 py-3">
                     <Link
                       href={`/admin/submissions/${submission.id}`}
-                      className="rounded border px-2 py-1 text-xs"
+                      className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100"
                     >
-                      View
+                      Переглянути
                     </Link>
                   </td>
                 </tr>

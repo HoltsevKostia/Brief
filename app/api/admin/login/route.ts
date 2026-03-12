@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    return NextResponse.json({ error: "Невірний логін або пароль" }, { status: 401 });
   }
 
   const { username, password } = parsed.data;
@@ -28,12 +28,12 @@ export async function POST(request: Request) {
   });
 
   if (!admin) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    return NextResponse.json({ error: "Невірний логін або пароль" }, { status: 401 });
   }
 
   const isValidPassword = await compare(password, admin.passwordHash);
   if (!isValidPassword) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    return NextResponse.json({ error: "Невірний логін або пароль" }, { status: 401 });
   }
 
   const { token, expires } = createSessionToken(admin.id);

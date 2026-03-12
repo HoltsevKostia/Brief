@@ -77,7 +77,7 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
 
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? "Failed to submit");
+      setError(payload?.error ?? "Не вдалося надіслати форму");
       setIsSubmitting(false);
       return;
     }
@@ -86,15 +86,14 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-7">
       {questions.map((question) => {
         const options = optionsById.get(question.id) ?? [];
 
         return (
-          <div key={question.id} className="space-y-2">
-            <label htmlFor={question.id} className="block text-sm font-medium">
-              {question.label}
-              {question.required ? " *" : ""}
+          <div key={question.id} className="space-y-2.5">
+            <label htmlFor={question.id} className="block text-sm font-medium text-slate-900">
+              {question.label} {question.required ? <span className="text-red-600">*</span> : null}
             </label>
 
             {question.type === "text" && (
@@ -104,7 +103,7 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
                 type="text"
                 required={question.required}
                 placeholder={question.placeholder ?? ""}
-                className="w-full rounded border px-3 py-2"
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             )}
 
@@ -114,7 +113,7 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
                 name={question.id}
                 required={question.required}
                 placeholder={question.placeholder ?? ""}
-                className="w-full rounded border px-3 py-2"
+                className="min-h-28 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             )}
 
@@ -125,7 +124,7 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
                 type="email"
                 required={question.required}
                 placeholder={question.placeholder ?? ""}
-                className="w-full rounded border px-3 py-2"
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             )}
 
@@ -136,7 +135,7 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
                 type="number"
                 required={question.required}
                 placeholder={question.placeholder ?? ""}
-                className="w-full rounded border px-3 py-2"
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             )}
 
@@ -145,11 +144,11 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
                 id={question.id}
                 name={question.id}
                 required={question.required}
-                className="w-full rounded border px-3 py-2"
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 defaultValue=""
               >
                 <option value="" disabled>
-                  Select an option
+                  Оберіть варіант
                 </option>
                 {options.map((option) => (
                   <option key={option} value={option}>
@@ -160,14 +159,14 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
             )}
 
             {question.type === "multiSelect" && (
-              <div className="space-y-2">
+              <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
                 {options.map((option) => (
-                  <label key={option} className="flex items-center gap-2 text-sm">
+                  <label key={option} className="flex items-center gap-2.5 text-sm text-slate-700">
                     <input
                       type="checkbox"
                       name={question.id}
                       value={option}
-                      className="h-4 w-4 rounded border"
+                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <span>{option}</span>
                   </label>
@@ -176,25 +175,28 @@ export function PublicBriefForm({ briefConfigId, questions }: BriefFormProps) {
             )}
 
             {question.type === "checkbox" && (
-              <input
-                id={question.id}
-                name={question.id}
-                type="checkbox"
-                className="h-4 w-4 rounded border"
-              />
+              <label className="flex items-center gap-2.5 text-sm text-slate-700">
+                <input
+                  id={question.id}
+                  name={question.id}
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>Так</span>
+              </label>
             )}
           </div>
         );
       })}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+        className="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50 sm:w-auto"
       >
-        {isSubmitting ? "Submitting..." : "Submit"}
+        {isSubmitting ? "Надсилання..." : "Надіслати"}
       </button>
     </form>
   );

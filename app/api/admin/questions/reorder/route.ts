@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = questionReorderSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid reorder payload" }, { status: 400 });
+    return NextResponse.json({ error: "Некоректні дані сортування" }, { status: 400 });
   }
 
   const { questionId, direction } = parsed.data;
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     select: { id: true, briefConfigId: true },
   });
   if (!current) {
-    return NextResponse.json({ error: "Question not found" }, { status: 404 });
+    return NextResponse.json({ error: "Питання не знайдено" }, { status: 404 });
   }
 
   const ordered = await prisma.briefQuestion.findMany({
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const currentIndex = ordered.findIndex((q) => q.id === questionId);
   if (currentIndex === -1) {
-    return NextResponse.json({ error: "Question not found" }, { status: 404 });
+    return NextResponse.json({ error: "Питання не знайдено" }, { status: 404 });
   }
 
   const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;

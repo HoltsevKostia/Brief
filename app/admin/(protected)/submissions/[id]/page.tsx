@@ -5,7 +5,7 @@ type Params = { params: Promise<{ id: string }> };
 
 function renderAnswerValue(type: string, rawValue: string): string {
   if (type === "checkbox") {
-    return rawValue === "true" ? "Yes" : "No";
+    return rawValue === "true" ? "Так" : "Ні";
   }
 
   if (type === "multiSelect") {
@@ -53,27 +53,31 @@ export default async function AdminSubmissionDetailPage({ params }: Params) {
 
   return (
     <main className="space-y-4">
-      <h1 className="text-2xl font-semibold">Submission Details</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Деталі заявки</h1>
 
-      <div className="rounded border p-4 text-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
         <p>
-          <span className="font-medium">ID:</span> <span className="font-mono">{submission.id}</span>
+          <span className="font-medium text-slate-900">ID:</span>{" "}
+          <span className="font-mono text-xs text-slate-700">{submission.id}</span>
         </p>
-        <p>
-          <span className="font-medium">Created At:</span> {submission.createdAt.toLocaleString()}
+        <p className="mt-1 text-slate-700">
+          <span className="font-medium text-slate-900">Створено:</span>{" "}
+          {submission.createdAt.toLocaleString()}
         </p>
       </div>
 
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold">Answers</h2>
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-slate-900">Відповіді</h2>
         {submission.answers.length === 0 ? (
-          <p className="text-sm text-gray-600">No answers for this submission.</p>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-600">Для цієї заявки немає відповідей.</p>
+          </div>
         ) : (
           <div className="space-y-2">
             {submission.answers.map((answer) => (
-              <div key={answer.id} className="rounded border p-3">
-                <p className="text-sm font-medium">{answer.question.label}</p>
-                <p className="text-sm text-gray-700">
+              <div key={answer.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-sm font-medium text-slate-900">{answer.question.label}</p>
+                <p className="mt-1 text-sm text-slate-700">
                   {renderAnswerValue(answer.question.type, answer.value)}
                 </p>
               </div>

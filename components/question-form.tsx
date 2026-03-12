@@ -46,6 +46,16 @@ const QUESTION_TYPES: AdminQuestionType[] = [
   "checkbox",
 ];
 
+const QUESTION_TYPE_LABELS: Record<AdminQuestionType, string> = {
+  text: "Короткий текст",
+  textarea: "Текстовий блок",
+  email: "Email",
+  number: "Число",
+  singleSelect: "Один варіант",
+  multiSelect: "Кілька варіантів",
+  checkbox: "Прапорець",
+};
+
 function parseOptionsInput(input: string): string[] {
   return input
     .split(",")
@@ -76,6 +86,17 @@ export function QuestionForm({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (mode === "create") {
+      setLabel("");
+      setType("text");
+      setRequired(false);
+      setSortOrder(nextSortOrder);
+      setPlaceholder("");
+      setOptionsInput("");
+      setError(null);
+      return;
+    }
+
     if (initial) {
       setLabel(initial.label);
       setType(initial.type);
@@ -85,7 +106,7 @@ export function QuestionForm({
       setOptionsInput(optionsToInput(initial.optionsJson));
       setError(null);
     }
-  }, [initial]);
+  }, [initial, mode, nextSortOrder]);
 
   const usesPlaceholder = useMemo(
     () => type === "text" || type === "textarea" || type === "email" || type === "number",
@@ -122,107 +143,107 @@ export function QuestionForm({
         setOptionsInput("");
       }
     } catch {
-      setError("Failed to save question");
+      setError("Не вдалося зберегти питання");
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded border p-4">
-      <h3 className="text-sm font-semibold">
-        {mode === "create" ? "Add question" : "Edit question"}
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 className="text-sm font-semibold text-slate-900">
+        {mode === "create" ? "Додати питання" : "Редагувати питання"}
       </h3>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Label</label>
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-slate-900">Назва питання</label>
         <input
           value={label}
           onChange={(event) => setLabel(event.target.value)}
-          className="w-full rounded border px-3 py-2"
+          className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           required
         />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1">
-          <label className="text-sm font-medium">Type</label>
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-slate-900">Тип</label>
           <select
             value={type}
             onChange={(event) => setType(event.target.value as AdminQuestionType)}
-            className="w-full rounded border px-3 py-2"
+            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           >
             {QUESTION_TYPES.map((questionType) => (
               <option key={questionType} value={questionType}>
-                {questionType}
+                {QUESTION_TYPE_LABELS[questionType]}
               </option>
             ))}
           </select>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium">Sort order</label>
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-slate-900">Порядок</label>
           <input
             type="number"
             value={sortOrder}
             onChange={(event) => setSortOrder(Number(event.target.value))}
-            className="w-full rounded border px-3 py-2"
+            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             min={1}
             required
           />
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
         <input
           type="checkbox"
           checked={required}
           onChange={(event) => setRequired(event.target.checked)}
-          className="h-4 w-4 rounded border"
+          className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
         />
-        Required
+        Обов&apos;язкове
       </label>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Placeholder</label>
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-slate-900">Плейсхолдер</label>
         <input
           value={placeholder}
           onChange={(event) => setPlaceholder(event.target.value)}
-          className="w-full rounded border px-3 py-2"
+          className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           disabled={!usesPlaceholder}
-          placeholder={usesPlaceholder ? "Optional placeholder" : "Not used for this type"}
+          placeholder={usesPlaceholder ? "Необов'язкова підказка" : "Не використовується для цього типу"}
         />
       </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Options (comma separated)</label>
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-slate-900">Варіанти (через кому)</label>
         <input
           value={optionsInput}
           onChange={(event) => setOptionsInput(event.target.value)}
-          className="w-full rounded border px-3 py-2"
+          className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           disabled={!usesOptions}
-          placeholder={usesOptions ? "Instagram, Telegram, Friend" : "Only for select types"}
+          placeholder={usesOptions ? "Instagram, Telegram, Friend" : "Тільки для select-типів"}
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
       <div className="flex items-center gap-2">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded bg-black px-3 py-2 text-sm text-white disabled:opacity-60"
+          className="rounded-xl bg-indigo-600 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-60"
         >
-          {isSubmitting ? "Saving..." : mode === "create" ? "Add question" : "Save changes"}
+          {isSubmitting ? "Збереження..." : mode === "create" ? "Додати питання" : "Зберегти зміни"}
         </button>
 
         {mode === "edit" && onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="rounded border px-3 py-2 text-sm"
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-100"
           >
-            Cancel
+            Скасувати
           </button>
         )}
       </div>

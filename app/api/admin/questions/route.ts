@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = questionCreateSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid question payload" }, { status: 400 });
+    return NextResponse.json({ error: "Некоректні дані питання" }, { status: 400 });
   }
 
   const currentBrief = await prisma.briefConfig.findFirst({
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     select: { id: true },
   });
   if (!currentBrief) {
-    return NextResponse.json({ error: "Brief not found" }, { status: 404 });
+    return NextResponse.json({ error: "Бриф не знайдено" }, { status: 404 });
   }
 
   const createData = {

@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = submissionInputSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid submission payload" }, { status: 400 });
+    return NextResponse.json({ error: "Некоректні дані форми" }, { status: 400 });
   }
 
   const { briefConfigId, answers } = parsed.data;
@@ -45,12 +45,12 @@ export async function POST(request: Request) {
     select: { id: true },
   });
   if (!briefExists) {
-    return NextResponse.json({ error: "Brief not found" }, { status: 400 });
+    return NextResponse.json({ error: "Бриф не знайдено" }, { status: 400 });
   }
 
   const questionIds = [...new Set(answers.map((answer) => answer.questionId))];
   if (questionIds.length !== answers.length) {
-    return NextResponse.json({ error: "Duplicate question answers are not allowed" }, { status: 400 });
+    return NextResponse.json({ error: "Дубльовані відповіді на питання заборонені" }, { status: 400 });
   }
 
   const questions = (await prisma.briefQuestion.findMany({
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
   const questionById = new Map(questions.map((question) => [question.id, question]));
   if (questionById.size !== questionIds.length) {
-    return NextResponse.json({ error: "Submission contains unknown questions" }, { status: 400 });
+    return NextResponse.json({ error: "Форма містить невідомі питання" }, { status: 400 });
   }
 
   let normalizedAnswers: Array<{ questionId: string; value: string }>;
@@ -123,8 +123,11 @@ export async function POST(request: Request) {
           throw new Error("INVALID_QUESTION_TYPE");
       }
     });
-  } catch {
-    return NextResponse.json({ error: "Invalid submission answers" }, { status: 400 });
+  } catch (error) {
+    if (error instanceof Error && error.message === "REQUIRED_VALUE_MISSING") {
+      return NextResponse.json({ error: "Заповніть обов'язкові поля" }, { status: 400 });
+    }
+    return NextResponse.json({ error: "Некоректні значення відповідей" }, { status: 400 });
   }
 
   const requiredQuestions = (await prisma.briefQuestion.findMany({
@@ -139,18 +142,18 @@ export async function POST(request: Request) {
   for (const requiredQuestion of requiredQuestions) {
     const submittedValue = normalizedByQuestionId.get(requiredQuestion.id);
     if (submittedValue === undefined) {
-      return NextResponse.json({ error: "Missing required answers" }, { status: 400 });
+      return NextResponse.json({ error: "Заповніть обов'язкові поля" }, { status: 400 });
     }
     if (requiredQuestion.type !== "checkbox" && submittedValue.trim().length === 0) {
-      return NextResponse.json({ error: "Missing required answers" }, { status: 400 });
+      return NextResponse.json({ error: "Заповніть обов'язкові поля" }, { status: 400 });
     }
     if (requiredQuestion.type === "checkbox" && submittedValue !== "true") {
-      return NextResponse.json({ error: "Missing required answers" }, { status: 400 });
+      return NextResponse.json({ error: "Заповніть обов'язкові поля" }, { status: 400 });
     }
     if (requiredQuestion.type === "multiSelect") {
       const parsedValue = JSON.parse(submittedValue) as unknown;
       if (!Array.isArray(parsedValue) || parsedValue.length === 0) {
-        return NextResponse.json({ error: "Missing required answers" }, { status: 400 });
+        return NextResponse.json({ error: "Заповніть обов'язкові поля" }, { status: 400 });
       }
     }
   }
