@@ -1,5 +1,6 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { AdminDeleteSubmissionButton } from "@/components/admin-delete-submission-button";
 
 const kyivDateTimeFormatter = new Intl.DateTimeFormat("uk-UA", {
   timeZone: "Europe/Kyiv",
@@ -52,12 +53,15 @@ export default async function AdminSubmissionsPage() {
                     {kyivDateTimeFormatter.format(submission.createdAt)}
                   </td>
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/admin/submissions/${submission.id}`}
-                      className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100"
-                    >
-                      Переглянути
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/admin/submissions/${submission.id}`}
+                        className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100"
+                      >
+                        Переглянути
+                      </Link>
+                      <AdminDeleteSubmissionButton submissionId={submission.id} />
+                    </div>
                   </td>
                 </tr>
               ))}
