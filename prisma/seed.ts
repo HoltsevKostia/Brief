@@ -54,8 +54,25 @@ function parseQuestionType(value: string): QuestionType {
 }
 
 async function loadBriefSeedData(): Promise<BriefSeedData> {
-  const sourcePath = path.join(process.cwd(), "prisma", "brief-export.json");
-  const raw = await readFile(sourcePath, "utf8");
+  const primaryPath = path.join(process.cwd(), "prisma", "brief-export.json");
+  const fallbackPath = path.join(process.cwd(), "scripts", "dev", "brief-export.json");
+
+  let raw: string;
+  try {
+    raw = await readFile(primaryPath, "utf8");
+  } catch (error) {
+    const isMissingPrimary =
+      error instanceof Error &&
+      "code" in error &&
+      (error as { code?: string }).code === "ENOENT";
+
+    if (!isMissingPrimary) {
+      throw error;
+    }
+
+    raw = await readFile(fallbackPath, "utf8");
+  }
+
   const parsed = JSON.parse(raw) as {
     title: string;
     description: string;
@@ -130,6 +147,10 @@ async function main() {
       },
     });
   }
+
+  await prisma.submission.deleteMany({
+    where: { briefConfigId: brief.id },
+  });
 
   await prisma.briefQuestion.deleteMany({
     where: { briefConfigId: brief.id },
