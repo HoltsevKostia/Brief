@@ -20,11 +20,25 @@ export const briefUpdateSchema = z.object({
   description: z.string().trim().max(2000, "Description is too long"),
 });
 
+export const sectionCreateSchema = z.object({
+  title: z.string().trim().min(1, "Section title is required").max(200),
+  description: z.string().trim().max(2000).optional().nullable(),
+  sortOrder: z.number().int().min(1),
+});
+
+export const sectionUpdateSchema = sectionCreateSchema.partial();
+
+export const sectionReorderSchema = z.object({
+  sectionId: z.string().cuid(),
+  direction: z.enum(["up", "down"]),
+});
+
 const questionBaseSchema = z.object({
+  briefSectionId: z.string().cuid(),
   label: z.string().trim().min(1, "Label is required").max(300, "Label is too long"),
   type: questionTypeSchema,
   required: z.boolean().optional().default(false),
-  sortOrder: z.number().int().min(0),
+  sortOrder: z.number().int().min(1),
   placeholder: z
     .string()
     .trim()

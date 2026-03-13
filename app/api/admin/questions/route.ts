@@ -23,23 +23,58 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Бриф не знайдено" }, { status: 404 });
   }
 
-  const createData = {
-    ...parsed.data,
-    briefConfigId: currentBrief.id,
-    optionsJson: parsed.data.optionsJson ?? undefined,
-  };
+  const section = await prisma.briefSection.findUnique({
+    where: { id: parsed.data.briefSectionId },
+    select: { id: true, briefConfigId: true },
+  });
+  if (!section || section.briefConfigId !== currentBrief.id) {
+    return NextResponse.json({ error: "Секцію не знайдено" }, { status: 404 });
+  }
 
-  const question = await prisma.briefQuestion.create({
-    data: createData,
-    select: {
-      id: true,
-      label: true,
-      type: true,
-      required: true,
-      sortOrder: true,
-      placeholder: true,
-      optionsJson: true,
-    },
+  const question = await prisma.$transaction(async (tx) => {
+    const sectionQuestions = await tx.briefQuestion.findMany({
+      where: { briefSectionId: section.id },
+      orderBy: { sortOrder: "asc" },
+      select: { id: true },
+    });
+
+    const targetSortOrder = Math.min(
+      Math.max(parsed.data.sortOrder, 1),
+      sectionQuestions.length + 1,
+    );
+
+    await tx.briefQuestion.updateMany({
+      where: {
+        briefSectionId: section.id,
+        sortOrder: { gte: targetSortOrder },
+      },
+      data: {
+        sortOrder: { increment: 1 },
+      },
+    });
+
+    return tx.briefQuestion.create({
+      data: {
+        briefConfigId: currentBrief.id,
+        briefSectionId: parsed.data.briefSectionId,
+        label: parsed.data.label,
+        type: parsed.data.type,
+        required: parsed.data.required,
+        sortOrder: targetSortOrder,
+        placeholder: parsed.data.placeholder ?? null,
+        optionsJson: parsed.data.optionsJson ?? undefined,
+      },
+      select: {
+        id: true,
+        briefSectionId: true,
+        label: true,
+        type: true,
+        required: true,
+        sortOrder: true,
+        placeholder: true,
+        optionsJson: true,
+      },
+    });
   });
 
   return NextResponse.json({ success: true, question }, { status: 201 });

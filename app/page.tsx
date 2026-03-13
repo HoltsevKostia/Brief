@@ -24,7 +24,13 @@ export default async function Home() {
           <h1 className="text-3xl font-semibold tracking-tight text-slate-900">{brief.title}</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">{brief.description}</p>
         </header>
-        <PublicBriefForm briefConfigId={brief.id} questions={brief.questions} />
+        {brief.sections.length === 0 ? (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+            Секції брифу ще не налаштовані.
+          </p>
+        ) : (
+          <PublicBriefForm briefConfigId={brief.id} sections={brief.sections} />
+        )}
       </section>
     </main>
   );
