@@ -276,8 +276,8 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="space-y-6" data-testid="admin-brief-editor">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" data-testid="admin-brief-settings">
         <h2 className="mb-4 text-lg font-semibold text-slate-900">Налаштування брифу</h2>
         <form onSubmit={saveBrief} className="space-y-3">
           <div className="space-y-1.5">
@@ -374,7 +374,7 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
         </form>
       </section>
 
-      <section className="space-y-3">
+      <section className="space-y-3" data-testid="admin-questions-area">
         <h2 className="text-lg font-semibold text-slate-900">Питання</h2>
         {questionsError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{questionsError}</p>}
         {questionsSuccess && (

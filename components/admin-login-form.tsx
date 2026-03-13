@@ -31,7 +31,7 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4" data-testid="admin-login-form">
       <div className="space-y-1.5">
         <label htmlFor="username" className="text-sm font-medium text-slate-900">
           Логін
@@ -39,6 +39,7 @@ export function AdminLoginForm() {
         <input
           id="username"
           type="text"
+          data-testid="admin-login-username"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
           className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
@@ -53,6 +54,7 @@ export function AdminLoginForm() {
         <input
           id="password"
           type="password"
+          data-testid="admin-login-password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
@@ -65,6 +67,7 @@ export function AdminLoginForm() {
       <button
         type="submit"
         disabled={isLoading}
+        data-testid="admin-login-submit"
         className="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-60"
       >
         {isLoading ? "Вхід..." : "Увійти"}

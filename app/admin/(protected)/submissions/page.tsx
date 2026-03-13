@@ -8,15 +8,23 @@ export default async function AdminSubmissionsPage() {
   });
 
   return (
-    <main className="space-y-4">
-      <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Заявки</h1>
+    <main className="space-y-4" data-testid="admin-submissions-page">
+      <h1
+        className="text-2xl font-semibold tracking-tight text-slate-900"
+        data-testid="admin-submissions-heading"
+      >
+        Заявки
+      </h1>
 
       {submissions.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-slate-600">Поки що немає заявок.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div
+          className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm"
+          data-testid="admin-submissions-table"
+        >
           <table className="min-w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-left text-slate-700">

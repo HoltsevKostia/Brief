@@ -98,11 +98,12 @@ export function PublicBriefForm({ briefConfigId, sections }: BriefFormProps) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-7">
+    <form onSubmit={onSubmit} className="space-y-7" data-testid="public-brief-form">
       {sections.map((section) => (
         <section
           key={section.id}
           className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+          data-testid="public-brief-section"
         >
           <header>
             <h2 className="text-lg font-semibold text-slate-900">{section.title}</h2>
@@ -115,7 +116,14 @@ export function PublicBriefForm({ briefConfigId, sections }: BriefFormProps) {
             const options = optionsById.get(question.id) ?? [];
 
             return (
-              <div key={question.id} className="space-y-2.5">
+              <div
+                key={question.id}
+                className="space-y-2.5"
+                data-testid="public-question"
+                data-question-id={question.id}
+                data-question-type={question.type}
+                data-required={question.required ? "true" : "false"}
+              >
                 <label htmlFor={question.id} className="block text-sm font-medium text-slate-900">
                   {question.label} {question.required ? <span className="text-red-600">*</span> : null}
                 </label>
@@ -220,6 +228,7 @@ export function PublicBriefForm({ briefConfigId, sections }: BriefFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
+        data-testid="public-submit-button"
         className="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50 sm:w-auto"
       >
         {isSubmitting ? "Надсилання..." : "Надіслати"}
