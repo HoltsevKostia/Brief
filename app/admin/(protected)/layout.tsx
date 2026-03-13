@@ -14,13 +14,13 @@ export default async function AdminProtectedLayout({
           <nav className="flex items-center gap-2">
             <Link
               href="/admin/brief"
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              className="rounded-xl border border-slate-300 bg-slate-100 px-4 py-2.5 text-base font-semibold text-slate-800 transition hover:bg-slate-200"
             >
-              Бриф
+              Редагування брифу
             </Link>
             <Link
               href="/admin/submissions"
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              className="rounded-xl border border-slate-300 bg-slate-100 px-4 py-2.5 text-base font-semibold text-slate-800 transition hover:bg-slate-200"
             >
               Заявки
             </Link>

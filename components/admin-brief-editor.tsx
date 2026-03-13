@@ -51,6 +51,8 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
   const [questionsSuccess, setQuestionsSuccess] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<AdminQuestion | null>(null);
 
+  const sectionFormRef = useRef<HTMLFormElement | null>(null);
+  const questionFormContainerRef = useRef<HTMLDivElement | null>(null);
   const briefSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const questionsSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,6 +73,34 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
       if (questionsSuccessTimerRef.current) clearTimeout(questionsSuccessTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!editingSection || !sectionFormRef.current) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      sectionFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const firstField = sectionFormRef.current?.querySelector<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >("input, textarea, select");
+      firstField?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [editingSection]);
+
+  useEffect(() => {
+    if (!editingQuestion || !questionFormContainerRef.current) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      questionFormContainerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const firstField = questionFormContainerRef.current?.querySelector<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >("input, textarea, select");
+      firstField?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [editingQuestion]);
 
   function showBriefSuccess(message: string) {
     if (briefSuccessTimerRef.current) clearTimeout(briefSuccessTimerRef.current);
@@ -191,6 +221,10 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
     setSectionTitle(section.title);
     setSectionDescription(section.description ?? "");
     setSectionSortOrder(section.sortOrder);
+  }
+
+  function startEditQuestion(question: AdminQuestion) {
+    setEditingQuestion(question);
   }
 
   function cancelSectionEdit() {
@@ -316,7 +350,7 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold text-slate-900">Секції</h2>
-        <form onSubmit={submitSection} className="space-y-3">
+        <form ref={sectionFormRef} onSubmit={submitSection} className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-slate-900">Назва секції</label>
@@ -383,17 +417,19 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
           </p>
         )}
 
-        <QuestionForm
-          mode={editingQuestion ? "edit" : "create"}
-          initial={editingQuestion ?? undefined}
-          sections={sectionsOptions}
-          onCancel={() => setEditingQuestion(null)}
-          onSubmit={editingQuestion ? updateQuestion : createQuestion}
-        />
+        <div ref={questionFormContainerRef}>
+          <QuestionForm
+            mode={editingQuestion ? "edit" : "create"}
+            initial={editingQuestion ?? undefined}
+            sections={sectionsOptions}
+            onCancel={() => setEditingQuestion(null)}
+            onSubmit={editingQuestion ? updateQuestion : createQuestion}
+          />
+        </div>
 
         <QuestionList
           sections={brief.sections}
-          onEdit={setEditingQuestion}
+          onEdit={startEditQuestion}
           onDelete={deleteQuestion}
           onMove={moveQuestion}
           onEditSection={startEditSection}
