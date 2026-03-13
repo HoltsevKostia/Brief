@@ -2,15 +2,27 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { QuestionForm, type AdminQuestion } from "@/components/question-form";
+import {
+  QuestionForm,
+  type AdminQuestion,
+  type AdminSectionOption,
+} from "@/components/question-form";
 import { QuestionList } from "@/components/question-list";
+
+type AdminSection = {
+  id: string;
+  title: string;
+  description: string | null;
+  sortOrder: number;
+  questions: AdminQuestion[];
+};
 
 type AdminBriefEditorProps = {
   brief: {
     id: string;
     title: string;
     description: string;
-    questions: AdminQuestion[];
+    sections: AdminSection[];
   };
 };
 
@@ -18,22 +30,44 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
   const router = useRouter();
   const [title, setTitle] = useState(brief.title);
   const [description, setDescription] = useState(brief.description);
+
   const [briefError, setBriefError] = useState<string | null>(null);
-  const [questionsError, setQuestionsError] = useState<string | null>(null);
   const [briefSuccess, setBriefSuccess] = useState<string | null>(null);
+  const [isSavingBrief, setIsSavingBrief] = useState(false);
+
+  const [sectionError, setSectionError] = useState<string | null>(null);
+  const [sectionSuccess, setSectionSuccess] = useState<string | null>(null);
+  const [editingSection, setEditingSection] = useState<{
+    id: string;
+    title: string;
+    description: string | null;
+    sortOrder: number;
+  } | null>(null);
+  const [sectionTitle, setSectionTitle] = useState("");
+  const [sectionDescription, setSectionDescription] = useState("");
+  const [sectionSortOrder, setSectionSortOrder] = useState(brief.sections.length + 1);
+
+  const [questionsError, setQuestionsError] = useState<string | null>(null);
   const [questionsSuccess, setQuestionsSuccess] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<AdminQuestion | null>(null);
-  const [isSavingBrief, setIsSavingBrief] = useState(false);
+
   const briefSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sectionSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const questionsSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const nextSortOrder = useMemo(() => {
-    return brief.questions.length + 1;
-  }, [brief.questions]);
+  const sectionsOptions = useMemo<AdminSectionOption[]>(
+    () =>
+      brief.sections.map((section) => ({
+        id: section.id,
+        title: section.title,
+      })),
+    [brief.sections],
+  );
 
   useEffect(() => {
     return () => {
       if (briefSuccessTimerRef.current) clearTimeout(briefSuccessTimerRef.current);
+      if (sectionSuccessTimerRef.current) clearTimeout(sectionSuccessTimerRef.current);
       if (questionsSuccessTimerRef.current) clearTimeout(questionsSuccessTimerRef.current);
     };
   }, []);
@@ -44,6 +78,12 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
     briefSuccessTimerRef.current = setTimeout(() => setBriefSuccess(null), 4000);
   }
 
+  function showSectionSuccess(message: string) {
+    if (sectionSuccessTimerRef.current) clearTimeout(sectionSuccessTimerRef.current);
+    setSectionSuccess(message);
+    sectionSuccessTimerRef.current = setTimeout(() => setSectionSuccess(null), 4000);
+  }
+
   function showQuestionsSuccess(message: string) {
     if (questionsSuccessTimerRef.current) clearTimeout(questionsSuccessTimerRef.current);
     setQuestionsSuccess(message);
@@ -52,6 +92,10 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
 
   async function refreshAfterChange() {
     setEditingQuestion(null);
+    setEditingSection(null);
+    setSectionTitle("");
+    setSectionDescription("");
+    setSectionSortOrder(brief.sections.length + 1);
     router.refresh();
   }
 
@@ -80,7 +124,84 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
     router.refresh();
   }
 
+  async function submitSection(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSectionError(null);
+
+    const payload = {
+      title: sectionTitle.trim(),
+      description: sectionDescription.trim() || null,
+      sortOrder: sectionSortOrder,
+    };
+
+    const response = await fetch(
+      editingSection ? `/api/admin/sections/${editingSection.id}` : "/api/admin/sections",
+      {
+        method: editingSection ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      setSectionError(editingSection ? "Не вдалося оновити секцію" : "Не вдалося додати секцію");
+      return;
+    }
+
+    showSectionSuccess(editingSection ? "Секцію оновлено" : "Секцію додано");
+    await refreshAfterChange();
+  }
+
+  async function deleteSection(sectionId: string) {
+    setSectionError(null);
+    const response = await fetch(`/api/admin/sections/${sectionId}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      setSectionError(payload?.error ?? "Не вдалося видалити секцію");
+      return;
+    }
+    showSectionSuccess("Секцію видалено");
+    await refreshAfterChange();
+  }
+
+  async function moveSection(sectionId: string, direction: "up" | "down") {
+    setSectionError(null);
+    const response = await fetch("/api/admin/sections/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sectionId, direction }),
+    });
+    if (!response.ok) {
+      setSectionError("Не вдалося змінити порядок секцій");
+      return;
+    }
+    showSectionSuccess("Порядок секцій оновлено");
+    await refreshAfterChange();
+  }
+
+  function startEditSection(section: {
+    id: string;
+    title: string;
+    description: string | null;
+    sortOrder: number;
+  }) {
+    setEditingSection(section);
+    setSectionTitle(section.title);
+    setSectionDescription(section.description ?? "");
+    setSectionSortOrder(section.sortOrder);
+  }
+
+  function cancelSectionEdit() {
+    setEditingSection(null);
+    setSectionTitle("");
+    setSectionDescription("");
+    setSectionSortOrder(brief.sections.length + 1);
+  }
+
   async function createQuestion(payload: {
+    briefSectionId: string;
     label: string;
     type: AdminQuestion["type"];
     required: boolean;
@@ -103,6 +224,7 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
   }
 
   async function updateQuestion(payload: {
+    briefSectionId: string;
     label: string;
     type: AdminQuestion["type"];
     required: boolean;
@@ -146,16 +268,16 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
       body: JSON.stringify({ questionId, direction }),
     });
     if (!response.ok) {
-      setQuestionsError("Не вдалося змінити порядок");
+      setQuestionsError("Не вдалося змінити порядок питань");
       return;
     }
-    showQuestionsSuccess("Порядок оновлено");
+    showQuestionsSuccess("Порядок питань оновлено");
     await refreshAfterChange();
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="space-y-6" data-testid="admin-brief-editor">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" data-testid="admin-brief-settings">
         <h2 className="mb-4 text-lg font-semibold text-slate-900">Налаштування брифу</h2>
         <form onSubmit={saveBrief} className="space-y-3">
           <div className="space-y-1.5">
@@ -192,7 +314,67 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
         </form>
       </section>
 
-      <section className="space-y-3">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="mb-4 text-lg font-semibold text-slate-900">Секції</h2>
+        <form onSubmit={submitSection} className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-900">Назва секції</label>
+              <input
+                value={sectionTitle}
+                onChange={(event) => setSectionTitle(event.target.value)}
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-900">Порядок</label>
+              <input
+                type="number"
+                min={1}
+                value={sectionSortOrder}
+                onChange={(event) => setSectionSortOrder(Number(event.target.value))}
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-slate-900">Опис секції</label>
+            <textarea
+              value={sectionDescription}
+              onChange={(event) => setSectionDescription(event.target.value)}
+              className="min-h-20 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </div>
+
+          {sectionError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{sectionError}</p>}
+          {sectionSuccess && (
+            <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{sectionSuccess}</p>
+          )}
+
+          <div className="flex items-center gap-2">
+            <button
+              type="submit"
+              className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700"
+            >
+              {editingSection ? "Зберегти секцію" : "Додати секцію"}
+            </button>
+            {editingSection ? (
+              <button
+                type="button"
+                onClick={cancelSectionEdit}
+                className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-100"
+              >
+                Скасувати
+              </button>
+            ) : null}
+          </div>
+        </form>
+      </section>
+
+      <section className="space-y-3" data-testid="admin-questions-area">
         <h2 className="text-lg font-semibold text-slate-900">Питання</h2>
         {questionsError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{questionsError}</p>}
         {questionsSuccess && (
@@ -201,22 +383,22 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
           </p>
         )}
 
-        {editingQuestion ? (
-          <QuestionForm
-            mode="edit"
-            initial={editingQuestion}
-            onCancel={() => setEditingQuestion(null)}
-            onSubmit={updateQuestion}
-          />
-        ) : (
-          <QuestionForm mode="create" nextSortOrder={nextSortOrder} onSubmit={createQuestion} />
-        )}
+        <QuestionForm
+          mode={editingQuestion ? "edit" : "create"}
+          initial={editingQuestion ?? undefined}
+          sections={sectionsOptions}
+          onCancel={() => setEditingQuestion(null)}
+          onSubmit={editingQuestion ? updateQuestion : createQuestion}
+        />
 
         <QuestionList
-          questions={brief.questions}
+          sections={brief.sections}
           onEdit={setEditingQuestion}
           onDelete={deleteQuestion}
           onMove={moveQuestion}
+          onEditSection={startEditSection}
+          onDeleteSection={deleteSection}
+          onMoveSection={moveSection}
         />
       </section>
     </div>
