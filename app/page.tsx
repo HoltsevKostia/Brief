@@ -1,5 +1,6 @@
 import { getCurrentBrief } from "@/lib/brief";
 import { PublicBriefForm } from "@/components/public-brief-form";
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const brief = await getCurrentBrief();
