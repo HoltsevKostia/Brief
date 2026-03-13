@@ -1,6 +1,17 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
+const kyivDateTimeFormatter = new Intl.DateTimeFormat("uk-UA", {
+  timeZone: "Europe/Kyiv",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+
 export default async function AdminSubmissionsPage() {
   const submissions = await prisma.submission.findMany({
     orderBy: { createdAt: "desc" },
@@ -37,7 +48,9 @@ export default async function AdminSubmissionsPage() {
               {submissions.map((submission) => (
                 <tr key={submission.id} className="border-b border-slate-100 last:border-b-0">
                   <td className="px-4 py-3 font-mono text-xs text-slate-700">{submission.id}</td>
-                  <td className="px-4 py-3 text-slate-700">{submission.createdAt.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-slate-700">
+                    {kyivDateTimeFormatter.format(submission.createdAt)}
+                  </td>
                   <td className="px-4 py-3">
                     <Link
                       href={`/admin/submissions/${submission.id}`}

@@ -132,7 +132,7 @@ export function PublicBriefForm({ briefConfigId, sections }: BriefFormProps) {
                   <input
                     id={question.id}
                     name={question.id}
-                    type="text"
+                    type={question.label.trim().toLowerCase() === "кінцевий дедлайн" ? "date" : "text"}
                     required={question.required}
                     placeholder={question.placeholder ?? ""}
                     className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
@@ -165,6 +165,7 @@ export function PublicBriefForm({ briefConfigId, sections }: BriefFormProps) {
                     id={question.id}
                     name={question.id}
                     type="number"
+                    min={0}
                     required={question.required}
                     placeholder={question.placeholder ?? ""}
                     className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"

@@ -13,6 +13,7 @@ type SubmissionQuestionType =
 
 type SubmissionQuestion = {
   id: string;
+  label: string;
   type: SubmissionQuestionType;
   required: boolean;
   optionsJson: unknown;
@@ -30,6 +31,13 @@ function parseOptions(optionsJson: unknown): string[] {
 
 function isEmptyString(value: string) {
   return value.trim().length === 0;
+}
+
+function isValidIsoDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime())) return false;
+  return date.toISOString().slice(0, 10) === value;
 }
 
 export async function POST(request: Request) {
@@ -60,6 +68,7 @@ export async function POST(request: Request) {
     },
     select: {
       id: true,
+      label: true,
       type: true,
       required: true,
       optionsJson: true,
@@ -88,6 +97,14 @@ export async function POST(request: Request) {
         case "email": {
           if (typeof value !== "string") throw new Error("INVALID_VALUE_TYPE");
           if (question.required && isEmptyString(value)) throw new Error("REQUIRED_VALUE_MISSING");
+          if (
+            question.type === "text" &&
+            question.label.trim().toLowerCase() === "кінцевий дедлайн" &&
+            !isEmptyString(value) &&
+            !isValidIsoDate(value.trim())
+          ) {
+            throw new Error("INVALID_DATE");
+          }
           if (question.type === "email" && !isEmptyString(value)) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(value.trim())) throw new Error("INVALID_EMAIL");
@@ -99,6 +116,7 @@ export async function POST(request: Request) {
           if (raw === null) throw new Error("INVALID_VALUE_TYPE");
           if (question.required && isEmptyString(raw)) throw new Error("REQUIRED_VALUE_MISSING");
           if (!isEmptyString(raw) && Number.isNaN(Number(raw))) throw new Error("INVALID_NUMBER");
+          if (!isEmptyString(raw) && Number(raw) < 0) throw new Error("INVALID_NUMBER");
           return { questionId: answer.questionId, value: raw.trim() };
         }
         case "checkbox": {
