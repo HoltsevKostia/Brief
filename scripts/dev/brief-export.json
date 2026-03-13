@@ -1,0 +1,508 @@
+{
+  "title": "Бриф",
+  "description": "Бриф, як частина стадії збору інформації про проєкт чи продукт, надзвичайно важлива для взаєморозуміння команди із стейкхолдерами та/або кінцевими користувачами. Він дає змогу формалізувати та задокументувати бажання та потреби стейкхолдерів, та отримати розуміння про проєкт — його поточний стан чи потенціал його розробки. Детальні відповіді на питання брифу допоможуть краще зрозуміти проблематику бізнесу та відповідно оцінити складність, вартість та час роботи, необхідний на виконання проєкту. Бриф містить частину необов’язкових пунктів. Якщо на поточному етапі вони не є критичними чи пріоритетними, Ви можете пропускати їх. Пункти, позначені * , обов'язкові для заповнення.",
+  "sections": [
+    {
+      "title": "Контактна інформація",
+      "description": null,
+      "sortOrder": 1,
+      "questions": [
+        {
+          "label": "Контактна особа:",
+          "type": "text",
+          "required": true,
+          "sortOrder": 1,
+          "placeholder": "ПІБ",
+          "optionsJson": null
+        },
+        {
+          "label": "Ви:",
+          "type": "singleSelect",
+          "required": false,
+          "sortOrder": 2,
+          "placeholder": null,
+          "optionsJson": [
+            "Власник бізнесу",
+            "Представник компанії",
+            "Стартап",
+            "Інвестор",
+            "Інше"
+          ]
+        },
+        {
+          "label": "Назва компанії:",
+          "type": "text",
+          "required": false,
+          "sortOrder": 3,
+          "placeholder": "Наприклад: ТОВ \"Приклад\"",
+          "optionsJson": null
+        },
+        {
+          "label": "Email:",
+          "type": "email",
+          "required": true,
+          "sortOrder": 4,
+          "placeholder": "example@email.com",
+          "optionsJson": null
+        },
+        {
+          "label": "Телефон, месенджер:",
+          "type": "text",
+          "required": false,
+          "sortOrder": 5,
+          "placeholder": "+380..., Telegram",
+          "optionsJson": null
+        },
+        {
+          "label": "Час доступності для комунікації:",
+          "type": "text",
+          "required": false,
+          "sortOrder": 6,
+          "placeholder": "Наприклад: будні 10:00–18:00",
+          "optionsJson": null
+        }
+      ]
+    },
+    {
+      "title": "Інформація про продукт",
+      "description": "У цьому брифі під продуктом мається на увазі Ваш веб-сайт, платформа або система, яку планується створити або оновити.",
+      "sortOrder": 2,
+      "questions": [
+        {
+          "label": "Назва Вашого продукту:",
+          "type": "text",
+          "required": true,
+          "sortOrder": 1,
+          "placeholder": "Назва продукту",
+          "optionsJson": null
+        },
+        {
+          "label": "Тип продукту:",
+          "type": "singleSelect",
+          "required": true,
+          "sortOrder": 2,
+          "placeholder": null,
+          "optionsJson": [
+            "Сайт",
+            "Платформа",
+            "CRM",
+            "Маркетплейс",
+            "SaaS",
+            "Інше"
+          ]
+        },
+        {
+          "label": "Коротко опишіть основну ідею продукту:",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 3,
+          "placeholder": "Ідея продукту, його призначення та яку цінність він має приносити користувачам",
+          "optionsJson": null
+        },
+        {
+          "label": "Які бізнес-проблеми вирішує Ваш продукт?",
+          "type": "textarea",
+          "required": true,
+          "sortOrder": 4,
+          "placeholder": "Наприклад: мало онлайн-замовлень, складно обробляти заявки, відсутній зручний канал для клієнтів, відсутність необхідних рішень на ринку.",
+          "optionsJson": null
+        },
+        {
+          "label": "Чим ваш продукт відрізняється від існуючих рішень на ринку? Яку ключову цінність або перевагу отримує користувач, обираючи саме ваш продукт?",
+          "type": "textarea",
+          "required": true,
+          "sortOrder": 5,
+          "placeholder": "Унікальна торгова пропозиція",
+          "optionsJson": null
+        },
+        {
+          "label": "Чи є приклади конкурентів (сайтів або сервісів), які схожі на ваш продукт або які вам подобаються?",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 6,
+          "placeholder": "Посилання на сайти або сервіси та коротко що саме вам у них подобається.",
+          "optionsJson": null
+        }
+      ]
+    },
+    {
+      "title": "Бізнес-цілі та цінність",
+      "description": null,
+      "sortOrder": 3,
+      "questions": [
+        {
+          "label": "Які цілі проєкту?",
+          "type": "textarea",
+          "required": true,
+          "sortOrder": 1,
+          "placeholder": "Наприклад: запуск онлайн-продажів, збільшення кількості заявок, автоматизація внутрішніх процесів.",
+          "optionsJson": null
+        },
+        {
+          "label": "Які складники KPI мають змінитися?",
+          "type": "multiSelect",
+          "required": false,
+          "sortOrder": 2,
+          "placeholder": null,
+          "optionsJson": [
+            "Збільшення продажів",
+            "Збільшення конверсії",
+            "Автоматизація процесів",
+            "Зменшення витрат",
+            "Інше"
+          ]
+        },
+        {
+          "label": "Як ви визначите, що проєкт успішний?",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 3,
+          "placeholder": "Наприклад: зростання продажів, більше заявок, збільшення відвідуваності, автоматизація процесів.",
+          "optionsJson": null
+        }
+      ]
+    },
+    {
+      "title": "Цільова аудиторія та користувачі",
+      "description": null,
+      "sortOrder": 4,
+      "questions": [
+        {
+          "label": "Основні користувачі?",
+          "type": "text",
+          "required": true,
+          "sortOrder": 1,
+          "placeholder": "Наприклад: власники малого бізнесу, студенти, тренери і клієнти.",
+          "optionsJson": null
+        },
+        {
+          "label": "Географія:",
+          "type": "text",
+          "required": false,
+          "sortOrder": 2,
+          "placeholder": "Наприклад: Україна, Європа, локальний ринок міста.",
+          "optionsJson": null
+        },
+        {
+          "label": "Вік:",
+          "type": "text",
+          "required": false,
+          "sortOrder": 3,
+          "placeholder": "Наприклад: 18–35",
+          "optionsJson": null
+        },
+        {
+          "label": "Основні потреби користувачів:",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 4,
+          "placeholder": "Наприклад: швидко знайти послугу, оформити замовлення, отримати консультацію.",
+          "optionsJson": null
+        },
+        {
+          "label": "Основні проблеми користувачів:",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 5,
+          "placeholder": "Наприклад: складно знайти інформацію, довго оформлювати замовлення.",
+          "optionsJson": null
+        },
+        {
+          "label": "Які ключові сценарії використання продукту?",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 6,
+          "placeholder": "Опишіть, що користувач хоче зробити на сайті від входу до результату.",
+          "optionsJson": null
+        }
+      ]
+    },
+    {
+      "title": "Функціонал та можливості продукту",
+      "description": null,
+      "sortOrder": 5,
+      "questions": [
+        {
+          "label": "Оберіть необхідні модулі:",
+          "type": "multiSelect",
+          "required": false,
+          "sortOrder": 1,
+          "placeholder": null,
+          "optionsJson": [
+            "Авторизація / реєстрація",
+            "Кабінет користувача",
+            "Платіжна система",
+            "Адмін-панель",
+            "API інтеграції",
+            "CRM модуль",
+            "Управління контентом (CMS)",
+            "Форма зворотного зв'язку",
+            "Аналітика",
+            "Чат / повідомлення",
+            "Мультимовність",
+            "Інше"
+          ]
+        },
+        {
+          "label": "Опишіть специфічні функції, які є критичними:",
+          "type": "textarea",
+          "required": true,
+          "sortOrder": 2,
+          "placeholder": "Наприклад: інтеграція з конкретною CRM.",
+          "optionsJson": null
+        }
+      ]
+    },
+    {
+      "title": "Технічні вимоги та продуктивність",
+      "description": null,
+      "sortOrder": 6,
+      "questions": [
+        {
+          "label": "Яка очікувана кількість користувачів?",
+          "type": "number",
+          "required": false,
+          "sortOrder": 1,
+          "placeholder": "Наприклад: 1000",
+          "optionsJson": null
+        },
+        {
+          "label": "Чи є вимоги до швидкодії?",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 2,
+          "placeholder": "Наприклад: швидке завантаження сторінок або підтримка великої кількості користувачів.",
+          "optionsJson": null
+        },
+        {
+          "label": "Чи є вимоги до безпеки?",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 3,
+          "placeholder": "Наприклад: захист персональних даних, двофакторна авторизація.",
+          "optionsJson": null
+        },
+        {
+          "label": "Чи потрібна відповідність стандартам (GDPR, ISO тощо)?",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 4,
+          "placeholder": "Вкажіть потрібні стандарти",
+          "optionsJson": null
+        },
+        {
+          "label": "Чи є вимоги до масштабування?",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 5,
+          "placeholder": "Опишіть вимоги до масштабування",
+          "optionsJson": null
+        },
+        {
+          "label": "Чи планується мобільна адаптація?",
+          "type": "singleSelect",
+          "required": false,
+          "sortOrder": 6,
+          "placeholder": null,
+          "optionsJson": [
+            "Так",
+            "Ні",
+            "Поки невідомо"
+          ]
+        },
+        {
+          "label": "Інші специфічні вимоги:",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 7,
+          "placeholder": "Додаткові вимоги, побажання",
+          "optionsJson": null
+        }
+      ]
+    },
+    {
+      "title": "Бюджет, терміни та обмеження",
+      "description": null,
+      "sortOrder": 7,
+      "questions": [
+        {
+          "label": "Бюджет (USD):",
+          "type": "number",
+          "required": true,
+          "sortOrder": 1,
+          "placeholder": "Наприклад: 5000 USD.",
+          "optionsJson": null
+        },
+        {
+          "label": "Кінцева дата отримання бажаного продукту (дедлайн):",
+          "type": "text",
+          "required": true,
+          "sortOrder": 2,
+          "placeholder": "Наприклад: 30.06.2026",
+          "optionsJson": null
+        },
+        {
+          "label": "Чи є обмеження по технологіях?",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 3,
+          "placeholder": "Наприклад: використання конкретної платформи, CMS чи технології розробки.",
+          "optionsJson": null
+        },
+        {
+          "label": "Чи є юридичні або регуляторні вимоги до продукту?",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 4,
+          "placeholder": "Наприклад: вимоги до обробки персональних даних або платіжних систем.",
+          "optionsJson": null
+        }
+      ]
+    },
+    {
+      "title": "Контент, підтримка та розвиток",
+      "description": null,
+      "sortOrder": 8,
+      "questions": [
+        {
+          "label": "Чи є готові тексти, фото або інші матеріали для сайту?",
+          "type": "singleSelect",
+          "required": false,
+          "sortOrder": 1,
+          "placeholder": null,
+          "optionsJson": [
+            "Так",
+            "Частково",
+            "Ні",
+            "потрібно створювати"
+          ]
+        },
+        {
+          "label": "Хто буде відповідальний з вашого боку за надання матеріалів та погодження?",
+          "type": "text",
+          "required": false,
+          "sortOrder": 2,
+          "placeholder": "Наприклад: маркетолог компанії або керівник проекту.",
+          "optionsJson": null
+        },
+        {
+          "label": "Чи є у вас внутрішня технічна команда?",
+          "type": "singleSelect",
+          "required": false,
+          "sortOrder": 3,
+          "placeholder": null,
+          "optionsJson": [
+            "Так",
+            "Ні",
+            "Частково"
+          ]
+        },
+        {
+          "label": "Чи планується масштабування продукту після запуску?",
+          "type": "text",
+          "required": false,
+          "sortOrder": 4,
+          "placeholder": "Наприклад: нові модулі, мобільний додаток, додаткові ринки.",
+          "optionsJson": [
+            "Так",
+            "Ні",
+            "Поки невідомо"
+          ]
+        },
+        {
+          "label": "Чи потрібна технічна підтримка після запуску?",
+          "type": "singleSelect",
+          "required": false,
+          "sortOrder": 5,
+          "placeholder": null,
+          "optionsJson": [
+            "Так",
+            "Ні",
+            "Ще не визначено"
+          ]
+        },
+        {
+          "label": "Які терміни підтримки?",
+          "type": "text",
+          "required": false,
+          "sortOrder": 6,
+          "placeholder": "Наприклад: 3 місяці",
+          "optionsJson": null
+        },
+        {
+          "label": "Чи планується SEO?",
+          "type": "singleSelect",
+          "required": false,
+          "sortOrder": 7,
+          "placeholder": null,
+          "optionsJson": [
+            "Так",
+            "Ні",
+            "Ще не визначено"
+          ]
+        },
+        {
+          "label": "Чи потрібен маркетинг?",
+          "type": "singleSelect",
+          "required": false,
+          "sortOrder": 8,
+          "placeholder": null,
+          "optionsJson": [
+            "Так",
+            "Ні",
+            "Ще не визначено"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Дизайн та приклади",
+      "description": null,
+      "sortOrder": 9,
+      "questions": [
+        {
+          "label": "Логотип:",
+          "type": "text",
+          "required": false,
+          "sortOrder": 1,
+          "placeholder": "Посилання / опис / наявність",
+          "optionsJson": null
+        },
+        {
+          "label": "Брендбук:",
+          "type": "text",
+          "required": false,
+          "sortOrder": 2,
+          "placeholder": "Посилання / опис / наявність",
+          "optionsJson": null
+        },
+        {
+          "label": "Приклади:",
+          "type": "textarea",
+          "required": false,
+          "sortOrder": 3,
+          "placeholder": "Наведіть приклади або посилання сайтів / продуктів, дизайн яких вам подобається",
+          "optionsJson": null
+        },
+        {
+          "label": "Бажаний стиль:",
+          "type": "multiSelect",
+          "required": false,
+          "sortOrder": 4,
+          "placeholder": null,
+          "optionsJson": [
+            "Мінімалістичний",
+            "Монохромний",
+            "Корпоративний",
+            "Креативний",
+            "Технологічний",
+            "Преміальний",
+            "Необруталізм",
+            "Органічний / Еко-стиль",
+            "Ретро-футуризм"
+          ]
+        }
+      ]
+    }
+  ]
+}
