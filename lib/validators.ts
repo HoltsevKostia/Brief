@@ -98,6 +98,7 @@ export const questionReorderSchema = z.object({
 
 export const submissionInputSchema = z.object({
   briefConfigId: z.string().cuid(),
+  turnstileToken: z.string().min(1).optional(),
   answers: z.array(
     z.object({
       questionId: z.string().cuid(),

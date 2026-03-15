@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -22,7 +22,8 @@ export function AdminLoginForm() {
     });
 
     if (!response.ok) {
-      setError("Невірний логін або пароль");
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      setError(payload?.error ?? "Невірний логін або пароль");
       setIsLoading(false);
       return;
     }

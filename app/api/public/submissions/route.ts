@@ -1,4 +1,6 @@
-import { prisma } from "@/lib/prisma";
+﻿import { prisma } from "@/lib/prisma";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 import { submissionInputSchema } from "@/lib/validators";
 import { NextResponse } from "next/server";
 
@@ -24,6 +26,11 @@ type RequiredQuestion = {
   type: SubmissionQuestionType;
 };
 
+const PUBLIC_SUBMISSION_LIMIT = {
+  limit: 5,
+  windowMs: 10 * 60 * 1000,
+};
+
 function parseOptions(optionsJson: unknown): string[] {
   if (!Array.isArray(optionsJson)) return [];
   return optionsJson.filter((item): item is string => typeof item === "string");
@@ -41,10 +48,36 @@ function isValidIsoDate(value: string) {
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const rateLimit = checkRateLimit(`public-submissions:${ip}`, PUBLIC_SUBMISSION_LIMIT);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Забагато запитів. Спробуйте пізніше." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(rateLimit.retryAfterSec),
+        },
+      },
+    );
+  }
+
   const body = await request.json().catch(() => null);
   const parsed = submissionInputSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Некоректні дані форми" }, { status: 400 });
+  }
+
+  const turnstileOk = await verifyTurnstileToken({
+    token: parsed.data.turnstileToken,
+    ip,
+  });
+
+  if (!turnstileOk) {
+    return NextResponse.json(
+      { error: "Перевірка безпеки не пройдена. Спробуйте ще раз." },
+      { status: 400 },
+    );
   }
 
   const { briefConfigId, answers } = parsed.data;
@@ -169,8 +202,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Заповніть обов'язкові поля" }, { status: 400 });
     }
     if (requiredQuestion.type === "multiSelect") {
-      const parsedValue = JSON.parse(submittedValue) as unknown;
-      if (!Array.isArray(parsedValue) || parsedValue.length === 0) {
+      try {
+        const parsedValue = JSON.parse(submittedValue) as unknown;
+        if (!Array.isArray(parsedValue) || parsedValue.length === 0) {
+          return NextResponse.json({ error: "Заповніть обов'язкові поля" }, { status: 400 });
+        }
+      } catch {
         return NextResponse.json({ error: "Заповніть обов'язкові поля" }, { status: 400 });
       }
     }
