@@ -1,8 +1,8 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const loginSchema = z.object({
-  username: z.string().trim().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  username: z.string().trim().min(1, "Логін обов'язковий"),
+  password: z.string().min(1, "Пароль обов'язковий"),
 });
 
 export const questionTypeSchema = z.enum([
@@ -16,12 +16,12 @@ export const questionTypeSchema = z.enum([
 ]);
 
 export const briefUpdateSchema = z.object({
-  title: z.string().trim().min(1, "Title is required").max(200, "Title is too long"),
-  description: z.string().trim().max(2000, "Description is too long"),
+  title: z.string().trim().min(1, "Заголовок обов'язковий").max(200, "Заголовок занадто довгий"),
+  description: z.string().trim().max(2000, "Опис занадто довгий"),
 });
 
 export const sectionCreateSchema = z.object({
-  title: z.string().trim().min(1, "Section title is required").max(200),
+  title: z.string().trim().min(1, "Назва секції обов'язкова").max(200),
   description: z.string().trim().max(2000).optional().nullable(),
   sortOrder: z.number().int().min(1),
 });
@@ -35,18 +35,28 @@ export const sectionReorderSchema = z.object({
 
 const questionBaseSchema = z.object({
   briefSectionId: z.string().cuid(),
-  label: z.string().trim().min(1, "Label is required").max(300, "Label is too long"),
+  label: z.string().trim().min(1, "Назва питання обов'язкова").max(300, "Назва питання занадто довга"),
   type: questionTypeSchema,
   required: z.boolean().optional().default(false),
   sortOrder: z.number().int().min(1),
   placeholder: z
     .string()
     .trim()
-    .max(300, "Placeholder is too long")
+    .max(300, "Плейсхолдер занадто довгий")
     .optional()
     .nullable(),
-  optionsJson: z.array(z.string().trim().min(1)).max(100).optional().nullable(),
+  optionsJson: z.array(z.string().trim().min(1, "Варіанти не можуть бути порожніми")).max(100).optional().nullable(),
 });
+
+function hasDuplicateOptions(options: string[]) {
+  const seen = new Set<string>();
+  for (const option of options) {
+    const normalized = option.trim().toLowerCase();
+    if (seen.has(normalized)) return true;
+    seen.add(normalized);
+  }
+  return false;
+}
 
 function validateQuestionOptions(
   value: { type?: z.infer<typeof questionTypeSchema>; optionsJson?: string[] | null },
@@ -59,26 +69,35 @@ function validateQuestionOptions(
     ctx.addIssue({
       code: "custom",
       path: ["optionsJson"],
-      message: "singleSelect and multiSelect questions must include at least one option",
+      message: "Для цього типу питання потрібен хоча б один варіант",
     });
+    return;
   }
-  if (
-    needsOptions &&
-    value.optionsJson !== undefined &&
-    value.optionsJson !== null &&
-    value.optionsJson.length === 0
-  ) {
+
+  if (needsOptions && value.optionsJson !== undefined && value.optionsJson !== null) {
+    if (value.optionsJson.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["optionsJson"],
+        message: "Для цього типу питання потрібен хоча б один варіант",
+      });
+      return;
+    }
+
+    if (hasDuplicateOptions(value.optionsJson)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["optionsJson"],
+        message: "Варіанти відповіді не повинні дублюватися",
+      });
+    }
+  }
+
+  if (!needsOptions && value.optionsJson !== undefined && value.optionsJson !== null) {
     ctx.addIssue({
       code: "custom",
       path: ["optionsJson"],
-      message: "singleSelect and multiSelect questions must include at least one option",
-    });
-  }
-  if (!needsOptions && value.optionsJson && value.optionsJson.length > 0) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["optionsJson"],
-      message: "optionsJson is only allowed for singleSelect and multiSelect",
+      message: "Варіанти відповіді доступні лише для singleSelect та multiSelect",
     });
   }
 }
@@ -112,7 +131,7 @@ export const submissionInputSchema = z.object({
       ctx.addIssue({
         code: "custom",
         path: ["answers", index, "questionId"],
-        message: "Duplicate questionId is not allowed",
+        message: "Дублікати questionId заборонені",
       });
       return;
     }
