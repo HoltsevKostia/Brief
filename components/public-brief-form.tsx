@@ -144,8 +144,23 @@ export function PublicBriefForm({ briefConfigId, sections }: BriefFormProps) {
     window.location.href = "/submitted";
   }
 
+  function handleFormKeyDown(event: React.KeyboardEvent<HTMLFormElement>) {
+    if (event.key !== "Enter") return;
+
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    if (target.tagName === "TEXTAREA") return;
+    event.preventDefault();
+  }
+
   return (
-    <form onSubmit={onSubmit} className="space-y-7" data-testid="public-brief-form">
+    <form
+      onSubmit={onSubmit}
+      onKeyDown={handleFormKeyDown}
+      className="space-y-7"
+      data-testid="public-brief-form"
+    >
       {turnstileSiteKey ? (
         <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
       ) : null}

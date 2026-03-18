@@ -1,7 +1,22 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
 type Params = { params: Promise<{ id: string }> };
+
+type SectionGroup = {
+  id: string;
+  title: string;
+  sortOrder: number;
+  answers: Array<{
+    id: string;
+    value: string;
+    question: {
+      label: string;
+      type: string;
+      sortOrder: number;
+    };
+  }>;
+};
 
 function renderAnswerValue(type: string, rawValue: string): string {
   if (type === "checkbox") {
@@ -32,7 +47,6 @@ export default async function AdminSubmissionDetailPage({ params }: Params) {
       id: true,
       createdAt: true,
       answers: {
-        orderBy: { createdAt: "asc" },
         select: {
           id: true,
           value: true,
@@ -40,6 +54,14 @@ export default async function AdminSubmissionDetailPage({ params }: Params) {
             select: {
               label: true,
               type: true,
+              sortOrder: true,
+              briefSection: {
+                select: {
+                  id: true,
+                  title: true,
+                  sortOrder: true,
+                },
+              },
             },
           },
         },
@@ -50,6 +72,39 @@ export default async function AdminSubmissionDetailPage({ params }: Params) {
   if (!submission) {
     notFound();
   }
+
+  const sectionMap = new Map<string, SectionGroup>();
+
+  for (const answer of submission.answers) {
+    const section = answer.question.briefSection;
+    const sectionId = section?.id ?? "no-section";
+
+    if (!sectionMap.has(sectionId)) {
+      sectionMap.set(sectionId, {
+        id: sectionId,
+        title: section?.title ?? "Без секції",
+        sortOrder: section?.sortOrder ?? Number.MAX_SAFE_INTEGER,
+        answers: [],
+      });
+    }
+
+    sectionMap.get(sectionId)?.answers.push({
+      id: answer.id,
+      value: answer.value,
+      question: {
+        label: answer.question.label,
+        type: answer.question.type,
+        sortOrder: answer.question.sortOrder,
+      },
+    });
+  }
+
+  const groupedSections = Array.from(sectionMap.values())
+    .map((section) => ({
+      ...section,
+      answers: section.answers.sort((a, b) => a.question.sortOrder - b.question.sortOrder),
+    }))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 
   return (
     <main className="space-y-4">
@@ -68,19 +123,27 @@ export default async function AdminSubmissionDetailPage({ params }: Params) {
 
       <div className="space-y-3">
         <h2 className="text-lg font-semibold text-slate-900">Відповіді</h2>
-        {submission.answers.length === 0 ? (
+        {groupedSections.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-600">Для цієї заявки немає відповідей.</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {submission.answers.map((answer) => (
-              <div key={answer.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <p className="text-sm font-medium text-slate-900">{answer.question.label}</p>
-                <p className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-700">
-                  {renderAnswerValue(answer.question.type, answer.value)}
-                </p>
-              </div>
+          <div className="space-y-4">
+            {groupedSections.map((section) => (
+              <section key={section.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <h3 className="mb-3 text-base font-semibold text-slate-900">{section.title}</h3>
+
+                <div className="space-y-2">
+                  {section.answers.map((answer) => (
+                    <div key={answer.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-sm font-medium text-slate-900">{answer.question.label}</p>
+                      <p className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-700">
+                        {renderAnswerValue(answer.question.type, answer.value)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
         )}
