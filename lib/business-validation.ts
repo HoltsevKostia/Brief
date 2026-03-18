@@ -23,6 +23,15 @@ export function normalizeWhitespace(value: string) {
   return value.trim().replace(/\s+/g, " ");
 }
 
+function normalizeMultiline(value: string) {
+  return value
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trim().replace(/[^\S\n]+/g, " "))
+    .join("\n")
+    .trim();
+}
+
 function isOnlySymbols(value: string) {
   return !/[\p{L}\d]/u.test(value);
 }
@@ -74,7 +83,10 @@ export function validateTextualBusinessRules(params: {
   required: boolean;
   type: "text" | "textarea" | "email";
 }): ValidationResult {
-  const normalizedValue = normalizeWhitespace(params.value);
+  const normalizedValue =
+    params.type === "textarea"
+      ? normalizeMultiline(params.value)
+      : normalizeWhitespace(params.value);
   const fieldKind = detectFieldKind(params.label);
 
   if (params.required && normalizedValue.length === 0) {

@@ -77,7 +77,7 @@ export default async function AdminSubmissionDetailPage({ params }: Params) {
             {submission.answers.map((answer) => (
               <div key={answer.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                 <p className="text-sm font-medium text-slate-900">{answer.question.label}</p>
-                <p className="mt-1 text-sm text-slate-700">
+                <p className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-700">
                   {renderAnswerValue(answer.question.type, answer.value)}
                 </p>
               </div>
