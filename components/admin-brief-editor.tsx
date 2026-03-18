@@ -250,7 +250,8 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
-      setQuestionsError("Не вдалося додати питання");
+      const responsePayload = (await response.json().catch(() => null)) as { error?: string } | null;
+      setQuestionsError(responsePayload?.error ?? "Не вдалося додати питання");
       throw new Error("create-question-failed");
     }
     showQuestionsSuccess("Питання додано");
@@ -274,7 +275,8 @@ export function AdminBriefEditor({ brief }: AdminBriefEditorProps) {
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
-      setQuestionsError("Не вдалося оновити питання");
+      const responsePayload = (await response.json().catch(() => null)) as { error?: string } | null;
+      setQuestionsError(responsePayload?.error ?? "Не вдалося оновити питання");
       throw new Error("update-question-failed");
     }
     showQuestionsSuccess("Питання оновлено");

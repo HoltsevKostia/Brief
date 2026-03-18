@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { questionUpdateSchema } from "@/lib/validators";
@@ -15,7 +15,8 @@ export async function PATCH(request: Request, { params }: Params) {
   const body = await request.json().catch(() => null);
   const parsed = questionUpdateSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Некоректні дані питання" }, { status: 400 });
+    const firstMessage = parsed.error.issues[0]?.message ?? "Некоректні дані питання";
+    return NextResponse.json({ error: firstMessage }, { status: 400 });
   }
 
   const existing = await prisma.briefQuestion.findUnique({
